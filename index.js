@@ -29,6 +29,7 @@ async function run() {
 
         const allDataCollection = client.db("drawWiseDB").collection("allData");
         const usersCollection = client.db("drawWiseDB").collection("users");
+        const cartCollection = client.db("drawWiseDB").collection("carts");
 
         app.get('/popularclass',async(req,res)=>{
             const result = await allDataCollection.find().toArray();
@@ -51,6 +52,13 @@ async function run() {
             }
             const result= await usersCollection.insertOne(user);
             res.send(result);
+        })
+
+        app.post('/carts',async(req,res)=>{
+            const item =req.body;
+            console.log(item)
+            const result= await cartCollection.insertOne(item)
+            res.send(result)
         })
 
 
