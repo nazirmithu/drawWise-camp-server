@@ -28,9 +28,16 @@ async function run() {
 
 
         const allDataCollection = client.db("drawWiseDB").collection("allData");
+        const usersCollection = client.db("drawWiseDB").collection("users");
 
         app.get('/popularclass',async(req,res)=>{
             const result = await allDataCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post('/users', async(req,res)=>{
+            const user = req.body;
+            const result= await usersCollection.insertOne(user);
             res.send(result);
         })
 
