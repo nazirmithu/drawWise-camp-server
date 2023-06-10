@@ -31,33 +31,43 @@ async function run() {
         const usersCollection = client.db("drawWiseDB").collection("users");
         const cartCollection = client.db("drawWiseDB").collection("carts");
 
-        app.get('/popularclass',async(req,res)=>{
+        app.get('/popularclass', async (req, res) => {
             const result = await allDataCollection.find().toArray();
             res.send(result);
         })
 
-        app.get('/allclasses',async(req,res)=>{
+        app.get('/allclasses', async (req, res) => {
             const result = await allDataCollection.find().toArray();
             res.send(result);
         })
 
-        app.post('/users', async(req,res)=>{
+        app.post('/users', async (req, res) => {
             const user = req.body;
             console.log(user);
-            const query= {email:user.email}
-            const existingUser= await usersCollection.findOne(query)
-            const exitingUser = ('existing user',existingUser)
-            if(existingUser){
-                return res.send({message: 'user already exists' })
+            const query = { email: user.email }
+            const existingUser = await usersCollection.findOne(query)
+            const exitingUser = ('existing user', existingUser)
+            if (existingUser) {
+                return res.send({ message: 'user already exists' })
             }
-            const result= await usersCollection.insertOne(user);
+            const result = await usersCollection.insertOne(user);
             res.send(result);
         })
 
-        app.post('/carts',async(req,res)=>{
-            const item =req.body;
+        app.get('/carts', async (req, res) => {
+            const email = req.query.email;
+            if (!email) {
+                res.send([]);
+            }
+            const query = { email: email };
+            const result = await cartCollection.find(query).toArray()
+            res.send(result);
+        })
+
+        app.post('/carts', async (req, res) => {
+            const item = req.body;
             console.log(item)
-            const result= await cartCollection.insertOne(item)
+            const result = await cartCollection.insertOne(item)
             res.send(result)
         })
 
