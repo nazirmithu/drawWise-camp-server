@@ -15,11 +15,13 @@ const verifyJWT = (req, res, next) => {
         return res.status(401).send({ error: true, message: 'unauthorized access' });
     }
 
+    const token = authorization.split(' ')[1];
+
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
         if (error) {
             return res.status(401).send({ error: true, message: 'unauthorized access' })
         }
-        req.decoded=decoded;
+        req.decoded = decoded;
         next();
     })
 
@@ -84,6 +86,19 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+
+            if (req.decoded.email !== email) {
+                res.send({admin : false})
+            }
+
+            const query = { email: email }
+            const user = await usersCollection.findOne(query);
+            const result = { admin: user?.role === 'admin' }
+            res.send(result);
+        })
+
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) }
@@ -96,11 +111,18 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/carts', async (req, res) => {
+        app.get('/carts', verifyJWT, async (req, res) => {
             const email = req.query.email;
+
             if (!email) {
                 res.send([]);
             }
+
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ error: true, message: 'forbidden access' })
+            }
+
             const query = { email: email };
             const result = await cartCollection.find(query).toArray()
             res.send(result);
