@@ -87,6 +87,12 @@ async function run() {
             res.send(result);
         })
 
+        app.post('/allData', async (req, res) => {
+            const newClass = req.body;
+            const result = await allDataCollection.insertOne(newClass)
+            res.send(result);
+        })
+
         // users apis
         app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
             const result = await usersCollection.find().toArray();
@@ -106,7 +112,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('users/admin/:email', verifyJWT, async (req, res) => {
+        app.get('/users/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
 
             if (req.decoded.email !== email) {
@@ -116,9 +122,12 @@ async function run() {
             const query = { email: email }
             const user = await usersCollection.findOne(query);
             const result = { admin: user?.role === 'admin' }
+
             res.send(result);
+
         })
 
+        // make admin api
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) }
@@ -131,7 +140,12 @@ async function run() {
             res.send(result)
         })
 
-        app.get('users/instructor/:email', verifyJWT, async (req, res) => {
+        app.get('/users', verifyJWT, verifyInstructor, async (req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
 
             if (req.decoded.email !== email) {
@@ -156,6 +170,7 @@ async function run() {
             res.send(result)
         })
 
+        // cart collection api
         app.get('/carts', verifyJWT, async (req, res) => {
             const email = req.query.email;
 
