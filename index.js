@@ -82,7 +82,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/allclasses', async (req, res) => {
+        app.get('/allData', async (req, res) => {
             const result = await allDataCollection.find().toArray();
             res.send(result);
         })
