@@ -50,6 +50,7 @@ async function run() {
         const allDataCollection = client.db("drawWiseDB").collection("allData");
         const usersCollection = client.db("drawWiseDB").collection("users");
         const cartCollection = client.db("drawWiseDB").collection("carts");
+        const paymentCollection = client.db("drawWiseDB").collection("payments");
 
 
         app.post('/jwt', (req, res) => {
@@ -238,18 +239,27 @@ async function run() {
 
         app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const { price } = req.body;
-            const amount=price*100;
+            const amount = price * 100;
 
-            const paymentIntent= await stripe.paymentIntents.create({
-                amount:amount,
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
                 currency: 'usd',
-                payment_method_types:['card']
+                payment_method_types: ['card']
             })
             res.send({
                 clientSecret: paymentIntent.client_secret
             })
         })
 
+        app.post('/payments', verifyJWT, async (req, res) => {
+            const payment = req.body;
+            const insertResult = await paymentCollection.insertOne(payment)
+
+            const query = { _id: { $in: payment.cartItems.map(id => new ObjectId(id)) } }
+            const deleteResult=await cartCollection.deleteMany(query)
+
+            res.send({insertResult, deleteResult})
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
